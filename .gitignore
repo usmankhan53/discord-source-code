@@ -1,5 +1,6 @@
-.env
-.venv/
-__pycache__/
-*.pyc
-study_assistant.db
+# Local environment files and generated data
+**/.env
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/*.db
