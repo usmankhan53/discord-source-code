@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en" class="h-full bg-[#090a0c]">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A private AI workspace for browser automation.">
+  <meta name="theme-color" content="#090a0c">
+  <title>Navigator — Browser automation workspace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { ink: '#090a0c', shell: '#0d0f12', panel: '#121419', line: '#252931', accent: '#a3ff12', violet: '#8b7cff' },
+      boxShadow: { glow: '0 0 0 1px rgba(163,255,18,.12), 0 24px 80px rgba(0,0,0,.42)' },
+      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'] }
+    } } };
+  </script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    * { scrollbar-color: #2a2e36 transparent; scrollbar-width: thin; }
+    textarea::placeholder, input::placeholder { color: #555b66; }
+    .grid-fade { background-image: linear-gradient(rgba(255,255,255,.024) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.024) 1px,transparent 1px); background-size:30px 30px; mask-image:linear-gradient(to bottom,black,transparent 78%); }
+    .dot-pulse { box-shadow:0 0 0 0 rgba(163,255,18,.5); animation:pulse-ring 2s infinite; }
+    @keyframes pulse-ring { 70%{box-shadow:0 0 0 7px rgba(163,255,18,0)} 100%{box-shadow:0 0 0 0 rgba(163,255,18,0)} }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; } }
+  </style>
+</head>
+<body class="h-full overflow-hidden bg-ink font-sans text-zinc-100 antialiased selection:bg-accent selection:text-black">
+  <div class="flex h-full">
+    <aside class="hidden w-[270px] shrink-0 flex-col border-r border-line/80 bg-shell p-5 lg:flex">
+      <div class="flex items-center gap-3 px-1">
+        <div class="grid size-9 place-items-center rounded-xl bg-accent text-sm font-black text-[#111] shadow-[0_0_28px_rgba(163,255,18,.16)]">N</div>
+        <div><p class="text-sm font-semibold tracking-tight text-white">Navigator</p><p class="text-[11px] text-zinc-600">Automation workspace</p></div>
+      </div>
+      <button id="new-run" class="mt-8 flex w-full items-center justify-between rounded-xl bg-zinc-100 px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-accent">
+        <span class="flex items-center gap-2"><i data-lucide="plus" class="size-4"></i> New run</span><span class="text-[10px] text-zinc-500">⌘ N</span>
+      </button>
+      <div class="mt-8 flex items-center justify-between px-1"><p class="text-[10px] font-bold uppercase tracking-[.2em] text-zinc-600">Recent runs</p><button id="clear-history" class="hidden text-[10px] text-zinc-600 hover:text-zinc-300">Clear</button></div>
+      <div id="history-list" class="mt-3 space-y-1 overflow-y-auto"></div>
+      <div id="history-empty" class="mt-4 rounded-xl border border-dashed border-line px-4 py-5 text-center"><i data-lucide="history" class="mx-auto size-4 text-zinc-700"></i><p class="mt-2 text-xs text-zinc-600">Your runs will appear here</p></div>
+      <div class="mt-auto border-t border-line/70 pt-4"><div class="flex items-center justify-between rounded-xl bg-panel px-3 py-2.5"><div class="flex items-center gap-2 text-xs text-zinc-400"><span id="sidebar-dot" class="dot-pulse size-1.5 rounded-full bg-accent"></span><span id="sidebar-status">Checking agent</span></div><i data-lucide="shield-check" class="size-3.5 text-zinc-600"></i></div></div>
+    </aside>
+
+    <main class="relative min-w-0 flex-1 overflow-y-auto">
+      <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line/80 bg-ink/90 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
+        <div class="flex min-w-0 items-center gap-3"><div class="grid size-8 place-items-center rounded-lg bg-accent text-xs font-black text-black lg:hidden">N</div><div class="min-w-0"><p id="page-title" class="truncate text-sm font-medium text-zinc-200">New automation</p><p id="page-subtitle" class="text-[11px] text-zinc-600">Ready for a goal</p></div></div>
+        <div class="flex items-center gap-2"><span class="hidden items-center gap-1.5 rounded-full border border-line bg-panel/70 px-3 py-1.5 text-[11px] text-zinc-500 sm:flex"><i data-lucide="lock-keyhole" class="size-3"></i> Private session</span><button id="mobile-new" class="grid size-9 place-items-center rounded-lg border border-line text-zinc-400 lg:hidden" aria-label="Start new run"><i data-lucide="plus" class="size-4"></i></button></div>
+      </header>
+
+      <section id="composer-view" class="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-6xl items-center px-4 py-12 sm:px-6 lg:px-10">
+        <div class="grid-fade pointer-events-none absolute inset-x-0 top-0 h-[70%]"></div>
+        <div class="relative grid w-full items-center gap-14 xl:grid-cols-[minmax(0,1fr)_330px]">
+          <div>
+            <div id="hero-status" class="mb-6 inline-flex items-center gap-2 rounded-full border border-lime-300/15 bg-lime-300/[.045] px-3 py-1.5 text-[11px] font-medium text-lime-200"><span class="dot-pulse size-1.5 rounded-full bg-accent"></span><span>Browser agent ready</span></div>
+            <h1 class="max-w-3xl text-4xl font-semibold leading-[1.02] tracking-[-.045em] text-white sm:text-5xl lg:text-6xl">Give the browser<br class="hidden sm:block"> a goal, not a script.</h1>
+            <p class="mt-6 max-w-xl text-[15px] leading-7 text-zinc-500">Describe the outcome you need. The agent plans each step, operates a live browser, and returns a clear result.</p>
+            <form id="run-form" class="mt-9 max-w-3xl">
+              <div class="rounded-2xl border border-line bg-panel/95 p-2 shadow-glow transition focus-within:border-zinc-500">
+                <label for="goal" class="sr-only">Browser automation goal</label>
+                <textarea id="goal" rows="4" maxlength="3000" class="block w-full resize-none bg-transparent px-4 py-3 text-[15px] leading-7 text-zinc-100 outline-none" placeholder="Find three highly rated mechanical keyboards under $120 and compare their switches, connectivity, and warranty…" required></textarea>
+                <div id="options" class="hidden grid gap-3 border-t border-line px-3 py-3 sm:grid-cols-[1fr_140px]">
+                  <div><label for="start-url" class="mb-1.5 block text-[10px] font-bold uppercase tracking-[.16em] text-zinc-600">Start URL · optional</label><input id="start-url" type="url" class="h-10 w-full rounded-lg border border-line bg-ink px-3 text-xs text-zinc-300 outline-none focus:border-zinc-500" placeholder="https://example.com"></div>
+                  <div><label for="max-steps" class="mb-1.5 block text-[10px] font-bold uppercase tracking-[.16em] text-zinc-600">Step limit</label><select id="max-steps" class="h-10 w-full rounded-lg border border-line bg-ink px-3 text-xs text-zinc-300 outline-none focus:border-zinc-500"><option value="5">5 steps</option><option value="8" selected>8 steps</option><option value="12">12 steps</option><option value="15">15 steps</option></select></div>
+                </div>
+                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line px-3 pt-2">
+                  <button type="button" id="toggle-options" class="flex items-center gap-1.5 rounded-lg px-2 py-2 text-xs text-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-300"><i data-lucide="sliders-horizontal" class="size-3.5"></i> Run options</button>
+                  <div class="flex items-center gap-3"><span class="hidden text-[10px] text-zinc-600 sm:block">⌘ + Enter</span><button id="run-button" type="submit" class="group flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-bold text-[#111] transition hover:bg-lime-300 focus:ring-2 focus:ring-white disabled:cursor-not-allowed disabled:opacity-50">Run agent <i data-lucide="arrow-up-right" class="size-4"></i></button></div>
+                </div>
+              </div>
+              <p id="form-error" class="mt-3 hidden text-sm text-red-300" role="alert"></p>
+            </form>
+            <div class="mt-6 flex max-w-3xl flex-wrap gap-2">
+              <button data-example="Compare the pricing and main features of three popular project management tools for a 10-person team. Include source URLs." class="example rounded-full border border-line px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-500 hover:text-zinc-200">Compare products</button>
+              <button data-example="Open the website I provide, find its pricing page, and summarize every plan and limitation." class="example rounded-full border border-line px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-500 hover:text-zinc-200">Inspect a website</button>
+              <button data-example="Research the latest accessibility guidance for modal dialogs and return a concise checklist with sources." class="example rounded-full border border-line px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-500 hover:text-zinc-200">Collect research</button>
+            </div>
+          </div>
+          <aside class="hidden xl:block"><div class="rounded-2xl border border-line bg-panel/55 p-5">
+            <div class="mb-5 flex items-center justify-between"><p class="text-xs font-semibold text-zinc-300">One goal. Three phases.</p><span class="rounded-md border border-line px-2 py-1 text-[9px] uppercase tracking-wider text-zinc-600">Live</span></div>
+            <div class="space-y-5">
+              <div class="flex gap-3"><div class="grid size-7 shrink-0 place-items-center rounded-lg bg-violet/15 text-[10px] font-bold text-violet">01</div><div><p class="text-xs font-medium text-zinc-300">Plan</p><p class="mt-1 text-[11px] leading-5 text-zinc-600">Understand the goal and choose the safest next action.</p></div></div><div class="ml-3.5 h-4 border-l border-dashed border-zinc-700"></div>
+              <div class="flex gap-3"><div class="grid size-7 shrink-0 place-items-center rounded-lg bg-sky-400/10 text-[10px] font-bold text-sky-300">02</div><div><p class="text-xs font-medium text-zinc-300">Operate</p><p class="mt-1 text-[11px] leading-5 text-zinc-600">Navigate and interact while you watch each step.</p></div></div><div class="ml-3.5 h-4 border-l border-dashed border-zinc-700"></div>
+              <div class="flex gap-3"><div class="grid size-7 shrink-0 place-items-center rounded-lg bg-lime-300/10 text-[10px] font-bold text-lime-200">03</div><div><p class="text-xs font-medium text-zinc-300">Report</p><p class="mt-1 text-[11px] leading-5 text-zinc-600">Return a concise, source-aware result you can use.</p></div></div>
+            </div>
+          </div></aside>
+        </div>
+      </section>
+
+      <section id="workspace-view" class="hidden min-h-[calc(100vh-4rem)] p-3 sm:p-4 lg:p-5">
+        <div class="grid min-h-[calc(100vh-6.5rem)] gap-3 2xl:grid-cols-[300px_minmax(480px,1fr)_340px]">
+          <aside class="order-2 flex min-h-[360px] flex-col rounded-2xl border border-line bg-shell 2xl:order-1 2xl:min-h-0">
+            <div class="flex items-center justify-between border-b border-line px-4 py-3.5"><div class="flex items-center gap-2"><i data-lucide="list-tree" class="size-4 text-zinc-500"></i><p class="text-xs font-semibold text-zinc-300">Agent activity</p></div><span id="step-count" class="rounded-md bg-panel px-2 py-1 text-[10px] text-zinc-600">0 / 8</span></div>
+            <div id="activity-list" class="flex-1 space-y-2 overflow-y-auto p-3"><div id="activity-placeholder" class="grid h-full min-h-48 place-items-center px-6 text-center"><div><div class="mx-auto grid size-9 place-items-center rounded-xl border border-line bg-panel"><i data-lucide="sparkles" class="size-4 text-zinc-600"></i></div><p class="mt-3 text-xs text-zinc-600">The agent’s decisions will appear here.</p></div></div></div>
+            <div class="border-t border-line p-3"><button id="stop-button" class="flex w-full items-center justify-center gap-2 rounded-xl border border-red-400/15 bg-red-400/5 px-3 py-2.5 text-xs font-medium text-red-300 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-40"><i data-lucide="square" class="size-3"></i> Stop run</button></div>
+          </aside>
+
+          <div class="order-1 flex min-h-[480px] min-w-0 flex-col overflow-hidden rounded-2xl border border-line bg-shell 2xl:order-2">
+            <div class="flex items-center gap-3 border-b border-line px-3 py-2.5">
+              <div class="hidden gap-1.5 sm:flex"><span class="size-2.5 rounded-full bg-red-400/60"></span><span class="size-2.5 rounded-full bg-amber-300/60"></span><span class="size-2.5 rounded-full bg-lime-300/60"></span></div>
+              <div class="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-line bg-ink px-3 py-2"><i data-lucide="lock" class="size-3 shrink-0 text-zinc-700"></i><p id="browser-url" class="truncate text-[11px] text-zinc-500">about:blank</p></div>
+              <a id="open-page" href="#" target="_blank" rel="noopener noreferrer" class="pointer-events-none grid size-8 shrink-0 place-items-center rounded-lg border border-line text-zinc-600 opacity-40 hover:text-zinc-200" aria-label="Open current page"><i data-lucide="external-link" class="size-3.5"></i></a>
+            </div>
+            <div class="relative flex-1 overflow-hidden bg-[#e9ebee]">
+              <div id="browser-placeholder" class="absolute inset-0 grid place-items-center bg-[#101216] text-center"><div><div class="mx-auto grid size-12 place-items-center rounded-2xl border border-line bg-panel"><i data-lucide="monitor" class="size-5 text-zinc-600"></i></div><p class="mt-4 text-sm text-zinc-500">Browser preview</p><p class="mt-1 text-xs text-zinc-700">A live snapshot appears when the run starts.</p></div></div>
+              <img id="browser-image" class="hidden h-full w-full object-contain object-top" alt="Current browser page preview">
+              <div id="browser-loading" class="pointer-events-none absolute inset-x-0 top-0 hidden h-0.5 overflow-hidden bg-zinc-700"><div class="h-full w-1/3 animate-[pulse_1s_ease-in-out_infinite] bg-accent"></div></div>
+            </div>
+            <div class="flex items-center justify-between border-t border-line px-4 py-2.5 text-[10px] text-zinc-600"><span id="browser-title" class="max-w-[70%] truncate">Waiting for browser</span><span id="elapsed">00:00</span></div>
+          </div>
+
+          <aside class="order-3 flex min-h-[360px] flex-col rounded-2xl border border-line bg-shell 2xl:min-h-0">
+            <div class="border-b border-line px-4 py-3.5"><div class="flex items-center justify-between"><div class="flex items-center gap-2"><i data-lucide="target" class="size-4 text-zinc-500"></i><p class="text-xs font-semibold text-zinc-300">Goal & result</p></div><span id="run-status" class="rounded-full border border-amber-300/15 bg-amber-300/5 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-200">Queued</span></div></div>
+            <div class="flex-1 overflow-y-auto p-4"><p class="text-[10px] font-bold uppercase tracking-[.18em] text-zinc-700">Goal</p><p id="active-goal" class="mt-2 text-sm leading-6 text-zinc-300"></p><div class="my-5 border-t border-line"></div><p class="text-[10px] font-bold uppercase tracking-[.18em] text-zinc-700">Result</p><div id="result-empty" class="mt-3 rounded-xl border border-dashed border-line p-4"><p class="text-xs leading-5 text-zinc-600">The final answer will appear here when the agent finishes.</p></div><div id="result-content" class="mt-3 hidden whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300"></div><div id="result-error" class="mt-3 hidden rounded-xl border border-red-400/15 bg-red-400/5 p-4 text-xs leading-5 text-red-200"></div></div>
+            <div class="border-t border-line p-3"><button id="run-again" class="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-100 px-3 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-white"><i data-lucide="rotate-ccw" class="size-3.5"></i> Run another goal</button></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const appState = { taskId: null, source: null, startedAt: null, timer: null, terminal: false, goal: '', maxSteps: 8 };
+    const historyKey = 'navigator-run-history-v1';
+    const terminalStates = new Set(['completed', 'failed', 'stopped']);
+    function iconRefresh() { if (window.lucide) window.lucide.createIcons(); }
+    function loadHistory() { try { return JSON.parse(localStorage.getItem(historyKey) || '[]'); } catch { return []; } }
+    function saveHistory(items) { localStorage.setItem(historyKey, JSON.stringify(items.slice(0, 12))); }
+    function formatTime(iso) {
+      const diff = Math.max(0, Date.now() - new Date(iso).getTime());
+      if (diff < 60000) return 'just now';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+      return new Date(iso).toLocaleDateString();
+    }
+    function renderHistory() {
+      const items = loadHistory(); const list = $('#history-list'); list.replaceChildren();
+      $('#history-empty').classList.toggle('hidden', items.length > 0); $('#clear-history').classList.toggle('hidden', items.length === 0);
+      items.forEach((item) => {
+        const button = document.createElement('button'); button.className = 'group w-full rounded-xl px-3 py-2.5 text-left transition hover:bg-panel';
+        const row = document.createElement('div'); row.className = 'flex items-center gap-2';
+        const dot = document.createElement('span'); dot.className = `size-1.5 shrink-0 rounded-full ${item.status === 'completed' ? 'bg-accent' : item.status === 'failed' ? 'bg-red-400' : item.status === 'stopped' ? 'bg-zinc-600' : 'bg-amber-300'}`;
+        const title = document.createElement('p'); title.className = 'truncate text-xs text-zinc-400 group-hover:text-zinc-200'; title.textContent = item.goal; row.append(dot, title);
+        const meta = document.createElement('p'); meta.className = 'mt-1 pl-3.5 text-[10px] text-zinc-700'; meta.textContent = `${item.status} · ${formatTime(item.createdAt)}`;
+        button.append(row, meta); button.addEventListener('click', () => openHistoryItem(item)); list.append(button);
+      });
+    }
+    function updateHistory(patch) {
+      const items = loadHistory(); const index = items.findIndex((item) => item.id === patch.id);
+      if (index >= 0) items[index] = { ...items[index], ...patch }; else items.unshift(patch);
+      saveHistory(items); renderHistory();
+    }
+    async function checkStatus() {
+      try {
+        const response = await fetch('/api/status'); const status = await response.json();
+        const ready = status.status === 'ready' && status.browser_runtime;
+        $('#sidebar-status').textContent = ready ? 'Agent ready' : 'Setup required';
+        $('#sidebar-dot').className = `size-1.5 rounded-full ${ready ? 'dot-pulse bg-accent' : 'bg-amber-300'}`;
+        $('#hero-status span:last-child').textContent = ready ? 'Browser agent ready' : 'Complete local setup to run'; $('#run-button').disabled = !ready;
+      } catch { $('#sidebar-status').textContent = 'Agent unavailable'; $('#sidebar-dot').className = 'size-1.5 rounded-full bg-red-400'; }
+    }
+    function setRunStatus(status, message = '') {
+      const badge = $('#run-status'); badge.textContent = status;
+      const styles = {
+        queued:'border-amber-300/15 bg-amber-300/5 text-amber-200', running:'border-lime-300/15 bg-lime-300/5 text-lime-200',
+        stopping:'border-amber-300/15 bg-amber-300/5 text-amber-200', completed:'border-lime-300/15 bg-lime-300/5 text-lime-200',
+        failed:'border-red-400/15 bg-red-400/5 text-red-300', stopped:'border-zinc-500/20 bg-zinc-500/5 text-zinc-400'
+      };
+      badge.className = `rounded-full border px-2 py-1 text-[9px] font-bold uppercase tracking-wider ${styles[status] || styles.queued}`;
+      $('#page-subtitle').textContent = message || status.charAt(0).toUpperCase() + status.slice(1);
+      if (terminalStates.has(status)) {
+        appState.terminal = true; $('#stop-button').disabled = true; $('#browser-loading').classList.add('hidden'); stopTimer();
+        if (appState.source) appState.source.close(); updateHistory({ id: appState.taskId, status });
+      }
+    }
+    function showWorkspace(goal, maxSteps) {
+      $('#composer-view').classList.add('hidden'); $('#workspace-view').classList.remove('hidden');
+      $('#page-title').textContent = goal; $('#active-goal').textContent = goal; $('#step-count').textContent = `0 / ${maxSteps}`;
+      $('#activity-list').replaceChildren();
+      const placeholder = document.createElement('div'); placeholder.id = 'activity-placeholder'; placeholder.className = 'grid h-full min-h-48 place-items-center px-6 text-center';
+      placeholder.innerHTML = '<div><div class="mx-auto grid size-9 place-items-center rounded-xl border border-line bg-panel"><i data-lucide="sparkles" class="size-4 text-zinc-600"></i></div><p class="mt-3 text-xs text-zinc-600">The agent is preparing the first step.</p></div>'; $('#activity-list').append(placeholder);
+      $('#result-empty').classList.remove('hidden'); $('#result-content').classList.add('hidden'); $('#result-content').textContent = '';
+      $('#result-error').classList.add('hidden'); $('#result-error').textContent = ''; $('#browser-image').classList.add('hidden'); $('#browser-placeholder').classList.remove('hidden');
+      $('#browser-loading').classList.remove('hidden'); $('#browser-url').textContent = 'about:blank'; $('#browser-title').textContent = 'Starting secure browser';
+      $('#open-page').classList.add('pointer-events-none','opacity-40'); $('#stop-button').disabled = false; setRunStatus('queued','Preparing browser'); iconRefresh();
+    }
+    function showComposer({ preserveGoal = false } = {}) {
+      if (appState.source) appState.source.close(); stopTimer(); appState.taskId = null; appState.terminal = false;
+      $('#workspace-view').classList.add('hidden'); $('#composer-view').classList.remove('hidden'); $('#page-title').textContent = 'New automation'; $('#page-subtitle').textContent = 'Ready for a goal';
+      if (!preserveGoal) { $('#goal').value = ''; $('#start-url').value = ''; } $('#goal').focus();
+    }
+    function startTimer() {
+      stopTimer(); appState.startedAt = Date.now();
+      appState.timer = setInterval(() => { const total = Math.floor((Date.now()-appState.startedAt)/1000); $('#elapsed').textContent = `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`; }, 1000);
+    }
+    function stopTimer() { if (appState.timer) clearInterval(appState.timer); appState.timer = null; }
+    function addActivity(event) {
+      $('#activity-placeholder')?.remove(); const item = document.createElement('div'); item.id = `activity-${event.step}`; item.className = 'rounded-xl border border-line bg-panel/70 p-3';
+      const top = document.createElement('div'); top.className = 'flex items-center justify-between gap-2';
+      const step = document.createElement('span'); step.className = 'text-[9px] font-bold uppercase tracking-[.15em] text-violet'; step.textContent = `Step ${event.step}`;
+      const spinner = document.createElement('span'); spinner.className = 'size-2 animate-pulse rounded-full bg-accent'; spinner.dataset.activityState = 'indicator'; top.append(step,spinner);
+      const thought = document.createElement('p'); thought.className = 'mt-2 text-xs leading-5 text-zinc-400'; thought.textContent = event.thought;
+      const action = document.createElement('p'); action.className = 'mt-2 flex items-center gap-1.5 text-[10px] text-zinc-600'; action.innerHTML = '<i data-lucide="mouse-pointer-click" class="size-3"></i>';
+      const actionText = document.createElement('span'); actionText.textContent = event.action; action.append(actionText); item.append(top,thought,action); $('#activity-list').append(item);
+      $('#activity-list').scrollTop = $('#activity-list').scrollHeight; $('#step-count').textContent = `${event.step} / ${event.max_steps}`; iconRefresh();
+    }
+    function completeActivity(event) {
+      const item = $(`#activity-${event.step}`); if (!item) return; const indicator = item.querySelector('[data-activity-state]');
+      if (indicator) indicator.className = 'size-2 rounded-full bg-zinc-700';
+      const outcome = document.createElement('p'); outcome.className = 'mt-2 border-t border-line pt-2 text-[10px] text-zinc-600'; outcome.textContent = event.outcome; item.append(outcome);
+    }
+    function updateSnapshot(event) {
+      $('#browser-url').textContent = event.url || 'about:blank'; $('#browser-title').textContent = event.title || 'Browser';
+      if (event.url && /^https?:\/\//.test(event.url)) { $('#open-page').href = event.url; $('#open-page').classList.remove('pointer-events-none','opacity-40'); }
+      if (event.image) { $('#browser-image').src = event.image; $('#browser-image').classList.remove('hidden'); $('#browser-placeholder').classList.add('hidden'); }
+    }
+    function showResult(summary) {
+      $('#result-empty').classList.add('hidden'); $('#result-error').classList.add('hidden'); $('#result-content').textContent = summary; $('#result-content').classList.remove('hidden');
+      updateHistory({ id: appState.taskId, status:'completed', result:summary });
+    }
+    function showError(message) {
+      $('#result-empty').classList.add('hidden'); $('#result-content').classList.add('hidden'); $('#result-error').textContent = message; $('#result-error').classList.remove('hidden');
+      updateHistory({ id: appState.taskId, status:'failed', result:message });
+    }
+    function handleEvent(event) {
+      if (event.type === 'status') setRunStatus(event.status,event.message);
+      if (event.type === 'snapshot') updateSnapshot(event);
+      if (event.type === 'activity') addActivity(event);
+      if (event.type === 'step_complete') completeActivity(event);
+      if (event.type === 'result') showResult(event.summary);
+      if (event.type === 'error') showError(event.message);
+    }
+    async function startRun(event) {
+      event.preventDefault();
+      const goal = $('#goal').value.trim(); const startUrl = $('#start-url').value.trim(); const maxSteps = Number($('#max-steps').value); const error = $('#form-error');
+      error.classList.add('hidden');
+      if (goal.length < 3) { error.textContent = 'Describe what you want the browser to do.'; error.classList.remove('hidden'); return; }
+      $('#run-button').disabled = true;
+      try {
+        const response = await fetch('/api/agent/run', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({goal,start_url:startUrl||null,max_steps:maxSteps}) });
+        const payload = await response.json(); if (!response.ok) throw new Error(payload.detail || 'The run could not be started.');
+        Object.assign(appState,{taskId:payload.task_id,terminal:false,goal,maxSteps}); showWorkspace(goal,maxSteps); startTimer();
+        updateHistory({id:payload.task_id,goal,status:'running',result:'',createdAt:new Date().toISOString(),maxSteps});
+        appState.source = new EventSource(`/api/agent/tasks/${payload.task_id}/events`);
+        appState.source.onmessage = (message) => { try { handleEvent(JSON.parse(message.data)); } catch {} };
+        appState.source.onerror = () => { if (!appState.terminal) $('#page-subtitle').textContent = 'Reconnecting to run…'; };
+      } catch (requestError) { error.textContent = requestError.message; error.classList.remove('hidden'); }
+      finally { $('#run-button').disabled = false; }
+    }
+    function openHistoryItem(item) {
+      if (!terminalStates.has(item.status)) { $('#goal').value = item.goal; showComposer({preserveGoal:true}); return; }
+      Object.assign(appState,{taskId:item.id,goal:item.goal,maxSteps:item.maxSteps||8,terminal:true}); showWorkspace(item.goal,item.maxSteps||8);
+      setRunStatus(item.status,`Saved run · ${formatTime(item.createdAt)}`); $('#stop-button').disabled = true; $('#browser-loading').classList.add('hidden');
+      if (item.result) item.status === 'failed' ? showError(item.result) : showResult(item.result);
+    }
+    $('#run-form').addEventListener('submit',startRun);
+    $('#goal').addEventListener('keydown',(event) => { if ((event.metaKey||event.ctrlKey) && event.key === 'Enter') $('#run-form').requestSubmit(); });
+    $('#toggle-options').addEventListener('click',() => $('#options').classList.toggle('hidden'));
+    document.querySelectorAll('.example').forEach((button) => button.addEventListener('click',() => { $('#goal').value = button.dataset.example; $('#goal').focus(); }));
+    $('#stop-button').addEventListener('click',async () => {
+      if (!appState.taskId || appState.terminal) return; $('#stop-button').disabled = true; setRunStatus('stopping','Stopping after the current step…');
+      try { await fetch(`/api/agent/tasks/${appState.taskId}/stop`,{method:'POST'}); } catch { $('#stop-button').disabled = false; }
+    });
+    $('#new-run').addEventListener('click',() => showComposer()); $('#mobile-new').addEventListener('click',() => showComposer()); $('#run-again').addEventListener('click',() => showComposer());
+    $('#clear-history').addEventListener('click',() => { localStorage.removeItem(historyKey); renderHistory(); });
+    document.addEventListener('keydown',(event) => { if ((event.metaKey||event.ctrlKey) && event.key.toLowerCase() === 'n') { event.preventDefault(); showComposer(); } });
+    renderHistory(); checkStatus(); iconRefresh();
+  </script>
+</body>
+</html>
