@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Sheetwise · AI Excel Analyst</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-5 lg:px-10">
+      <a href="/" class="flex items-center gap-3" aria-label="Sheetwise home"><span class="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-xl font-bold text-white">▦</span><span class="text-xl font-bold tracking-tight">sheetwise<span class="ml-2 align-middle text-xs font-medium text-slate-400">AI ANALYST</span></span></a>
+      <span class="hidden rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 sm:block">● &nbsp; Your next insight starts here</span>
+    </div>
+  </header>
+  <main class="mx-auto max-w-[1440px] px-5 py-8 lg:px-10 lg:py-10">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div><p class="mb-2 text-xs font-semibold uppercase tracking-[.2em] text-emerald-700">Less spreadsheet work. More clarity.</p><h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">Big questions. Clear answers.</h1><p class="mt-3 text-sm text-slate-500">Turn your Excel data into insights, one conversation at a time.</p></div>
+      <span class="text-xs text-slate-400">WORKSPACE / OVERVIEW</span>
+    </div>
+    <div class="grid items-start gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+      <aside class="space-y-5">
+        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="mb-5 flex items-center justify-between"><h2 class="font-semibold">Your spreadsheet</h2><span class="text-xs text-slate-400">01</span></div>
+          <label id="dropzone" class="block cursor-pointer rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-8 text-center transition hover:border-emerald-400 hover:bg-emerald-50 focus-within:ring-2 focus-within:ring-emerald-500">
+            <span class="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-xl border border-slate-200 bg-white text-2xl text-emerald-600">↥</span>
+            <span class="block text-sm font-semibold">Drop your spreadsheet here</span><span class="mt-1 block text-xs text-slate-500">or click to browse files</span><span class="mt-4 block text-[11px] text-slate-400">.XLSX · UP TO 5 MB · 10,000 ROWS</span>
+            <input id="file" type="file" accept=".xlsx" class="sr-only" aria-label="Choose Excel spreadsheet">
+          </label>
+          <p id="uploadStatus" role="status" class="mt-3 break-words text-xs text-slate-500">Start by adding an Excel workbook.</p>
+          <div id="fileInfo" class="mt-5 hidden border-t border-slate-100 pt-5"><p id="fileName" class="truncate text-sm font-medium"></p><div class="mt-4 grid grid-cols-2 gap-3"><div class="rounded-lg bg-slate-50 p-3"><p id="rowCount" class="text-2xl font-semibold"></p><p class="text-xs text-slate-500">Rows</p></div><div class="rounded-lg bg-slate-50 p-3"><p id="columnCount" class="text-2xl font-semibold"></p><p class="text-xs text-slate-500">Columns</p></div></div><p class="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Available columns</p><div id="columns" class="flex flex-wrap gap-1.5"></div></div>
+        </section>
+        <section class="rounded-2xl bg-slate-900 p-6 text-white"><span class="text-xl text-emerald-300">✧</span><h2 class="mt-3 font-medium">A little curiosity goes a long way.</h2><p class="mt-2 text-sm leading-6 text-slate-400">Ask for totals, averages, rankings, or compare groups. We calculate the numbers and explain what they mean.</p><p class="mt-4 text-xs text-emerald-300">Calculated with pandas · Explained by AI</p></section>
+      </aside>
+      <div class="min-w-0 space-y-6">
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4"><div class="flex items-center gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-50 text-lg text-emerald-600">✧</span><div><h2 class="text-sm font-semibold">Ask your data</h2><p id="connection" class="text-xs text-slate-400">Waiting for a spreadsheet</p></div></div><button id="clearChat" class="rounded-lg px-3 py-2 text-xs text-slate-500 hover:bg-slate-100" type="button">Clear chat</button></div>
+          <div id="chat" role="log" aria-label="Analysis conversation" class="h-[460px] space-y-5 overflow-y-auto p-5 sm:p-7">
+            <div id="welcome" class="flex h-full flex-col items-center justify-center text-center"><span class="mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-emerald-50 text-3xl text-emerald-600">✧</span><h3 class="text-xl font-semibold tracking-tight">Meet your data’s new thinking partner.</h3><p class="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-500">Upload a spreadsheet, ask a question, and watch your answer come together.</p><div class="mt-7 flex gap-5 text-xs text-slate-400"><span>01 Upload</span><span>→</span><span>02 Ask</span><span>→</span><span>03 Discover</span></div></div>
+          </div>
+          <div class="border-t border-slate-100 p-4 sm:px-6"><div id="suggestions" class="mb-3 flex flex-wrap gap-2"></div><form id="questionForm" class="flex items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100"><label for="question" class="sr-only">Question about your spreadsheet</label><textarea id="question" rows="2" maxlength="2000" disabled placeholder="Upload a spreadsheet to get started…" class="min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none disabled:cursor-not-allowed"></textarea><button id="stop" type="button" hidden class="rounded-lg bg-slate-800 px-4 py-3 text-sm font-medium text-white">Stop</button><button id="send" type="submit" disabled class="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40">Ask ↗</button></form><p id="activity" role="status" class="mt-2 min-h-4 text-center text-[11px] text-slate-400">AI can make mistakes. Review the calculated results.</p></div>
+        </section>
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div class="flex items-center justify-between px-6 py-4"><h2 class="text-sm font-semibold">Data preview</h2><span class="text-xs text-slate-400">First 5 rows · First sheet</span></div><div id="previewEmpty" class="border-t border-slate-100 px-6 py-10 text-center text-sm text-slate-400">Your spreadsheet preview will appear here.</div><div class="max-h-72 overflow-auto"><table id="preview" class="w-full whitespace-nowrap text-left text-xs"></table></div></section>
+      </div>
+    </div>
+    <footer class="mt-7 text-center text-xs text-slate-400">Made for the questions hiding in your spreadsheets.</footer>
+  </main>
+</body>
+</html>

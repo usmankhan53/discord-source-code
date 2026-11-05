@@ -1,0 +1,20 @@
+:root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
+[hidden] { display: none !important; }
+button, label { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible { outline: 2px solid #059669; outline-offset: 3px; }
+#dropzone.dragging { border-color: #10b981; background: #ecfdf5; }
+#preview th { background: #f8fafc; font-weight: 600; color: #64748b; position: sticky; top: 0; }
+#preview th, #preview td { padding: 13px 24px; border-top: 1px solid #f1f5f9; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+#preview tbody tr:hover { background: #f8fafc; }
+.message { max-width: 92%; overflow-wrap: anywhere; font-size: 14px; line-height: 1.75; }
+.message.user { margin-left: auto; width: fit-content; border-radius: 16px 16px 4px 16px; background: #ecfdf5; padding: 12px 18px; color: #065f46; white-space: pre-wrap; }
+.message.assistant { border-left: 2px solid #a7f3d0; padding-left: 18px; }
+.answer { white-space: pre-wrap; }
+.result { margin: 12px 0; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; overflow-x: auto; }
+.result pre { font-size: 12px; white-space: pre-wrap; max-height: 220px; overflow: auto; }
+.result summary { cursor: pointer; font-size: 12px; font-weight: 600; color: #475569; }
+.message-status { margin-top: 8px; font-size: 12px; color: #64748b; }
+.message-status.error { color: #b91c1c; }
+.streaming::after { content: ' ▍'; color: #059669; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; scroll-behavior: auto !important; } }
