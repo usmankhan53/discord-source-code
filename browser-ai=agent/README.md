@@ -16,7 +16,7 @@ A local AI browser automation workspace with a FastAPI backend and a responsive 
 ```powershell
 python -m pip install -r requirements.txt
 python -m playwright install --no-shell chromium
-python -m uvicorn app:app --reload
+python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Open `http://127.0.0.1:8000`.
